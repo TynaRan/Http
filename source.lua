@@ -263,25 +263,6 @@ else
     PARENT = Main
 end
 
-coroutine.wrap(function()
-    while true do
-        PARENT.Name = randomString()
-        wait(1.85)
-    end
-end)()
-
---coroutine.wrap(function()
---    while true do
---        local children = game:GetService("CoreGui"):GetChildren()
---        if #children > 0 then
---            local target = children[math.random(1, #children)]
---            hiddenUI.Parent = target
---        else
---            hiddenUI.Parent = game:GetService("CoreGui")
- --       end
---        wait(2) 
---    end
---end)()
 
 shade1 = {}
 shade2 = {}
