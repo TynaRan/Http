@@ -17,7 +17,7 @@ if not game:IsLoaded() then
     notLoaded:Destroy()
 end
 
-currentVersion = "6.3"
+currentVersion = "6.3 (bypass kick)"
 
 Holder = Instance.new("Frame")
 Title = Instance.new("TextLabel")
@@ -266,22 +266,22 @@ end
 coroutine.wrap(function()
     while true do
         PARENT.Name = randomString()
-        wait(0.1)
+        wait(1.85)
     end
 end)()
 
-coroutine.wrap(function()
-    while true do
-        local children = game:GetService("CoreGui"):GetChildren()
-        if #children > 0 then
-            local target = children[math.random(1, #children)]
-            hiddenUI.Parent = target
-        else
-            hiddenUI.Parent = game:GetService("CoreGui")
-        end
-        wait(1) 
-    end
-end)()
+--coroutine.wrap(function()
+--    while true do
+--        local children = game:GetService("CoreGui"):GetChildren()
+--        if #children > 0 then
+--            local target = children[math.random(1, #children)]
+--            hiddenUI.Parent = target
+--        else
+--            hiddenUI.Parent = game:GetService("CoreGui")
+ --       end
+--        wait(2) 
+--    end
+--end)()
 
 shade1 = {}
 shade2 = {}
@@ -308,11 +308,15 @@ Title.BorderSizePixel = 0
 Title.Size = UDim2.new(0, 250, 0, 20)
 Title.Font = Enum.Font.SourceSans
 Title.TextSize = 18
-Title.Text = "Infinite Yield FE v" .. currentVersion
+Title.Text = "IY Remake v" .. currentVersion
 
 do
 	local emoji = ({
 		["01 01"] = "🎆",
+		["02 14"] = "❤️", 
+		["02 22"] = "🐱", 
+		["03 17"] = "🍀", 
+		["04 01"] = "🤡", 
 		[(function(Year)
 			local A = math.floor(Year/100)
 			local B = math.floor((13+8*A)/25)
@@ -330,8 +334,16 @@ do
 			end
 			return ("03 %02d"):format(G)
 		end)(tonumber(os.date"%Y"))] = "🥚",
+		["05 01"] = "💼", 
+		["06 01"] = "🎈", 
+		["07 04"] = "🎇", 
+		["08 08"] = "👨",
+		["09 10"] = "🍎", 
 		["10 31"] = "🎃",
-		["12 25"] = "🎄"
+		["11 11"] = "🌟",
+		["11 26"] = "🦃", 
+		["12 25"] = "🎄",
+		["12 31"] = "🎆" 
 	})[os.date("%m %d")]
 	if emoji then
 		Title.Text = ("%s %s %s"):format(emoji, Title.Text, emoji)
