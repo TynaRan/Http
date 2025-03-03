@@ -150,37 +150,138 @@ scroll_3 = Instance.new("ScrollingFrame")
 listlayout = Instance.new("UIListLayout",scroll_3)
 selectChat = Instance.new("TextButton")
 selectJoin = Instance.new("TextButton")
+local getnamecallmethod = debug.getnamecallmethod or getnamecallmethod
+local getrawmetatable = getrawmetatable
+local setreadonly = setreadonly
+local hookmetamethod = hookmetamethod
+local debug_info = debug.getinfo
+local rawget = rawget or debug.rawget
+local rawset = rawset or debug.rawset
+local newcclosure = newcclosure
+local hookfunction = hookfunction
+
+local function caseInsensitiveMatch(str1, str2)
+    return str1:lower() == str2:lower()
+end
+
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local oldNamecall = hookmetamethod(mt, "__namecall", newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+    if caseInsensitiveMatch(method, "Kick") then
+        return nil
+    end
+    return oldNamecall(self, ...)
+end))
+
+local function hookFunction(func)
+    return newcclosure(function(...)
+        for i = 1, select("#", ...) do
+            local arg = select(i, ...)
+            if typeof(arg) == "function" and caseInsensitiveMatch(debug_info(arg).name, "Kick") then
+                return nil
+            end
+        end
+        return func(...)
+    end)
+end
+
+local oldIndex = mt.__index
+mt.__index = hookFunction(function(t, k)
+    if caseInsensitiveMatch(k, "Namecall") or caseInsensitiveMatch(k, "Kick") then
+        return function() end
+    end
+    return oldIndex(t, k)
+end)
+
+local oldNewIndex = mt.__newindex
+mt.__newindex = hookFunction(function(t, k, v)
+    if caseInsensitiveMatch(k, "Namecall") or caseInsensitiveMatch(k, "Kick") then
+        return function() end
+    end
+    return oldNewIndex(t, k, v)
+end)
+
+hookfunction(setmetatable, hookFunction(function(t, mt)
+    if mt.__namecall then
+        mt.__namecall = hookFunction(mt.__namecall)
+    end
+    return setmetatable(t, mt)
+end))
+
+local protectNamecall = function(instance)
+    local oldIndex = mt.__index
+    mt.__index = newcclosure(function(t, k)
+        if caseInsensitiveMatch(k, "Namecall") or caseInsensitiveMatch(k, "Kick") then
+            return function() end
+        end
+        return oldIndex(t, k)
+    end)
+    rawset(mt, "__index", mt.__index)
+end
+
+protectNamecall(game)
+setreadonly(mt, true)
 
 function randomString()
-	local length = math.random(10,20)
-	local array = {}
-	for i = 1, length do
-		array[i] = string.char(math.random(32, 126))
-	end
-	return table.concat(array)
+    local length = math.random(10, 20)
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-=_+[]{}|;:',.<>?/`~\\\""
+    local array = {}
+    for i = 1, length do
+        local char
+        repeat
+            char = chars:sub(math.random(1, #chars), math.random(1, #chars))
+        until not string.find("infinite Yield", char)
+        array[i] = char
+    end
+    return table.concat(array)
 end
+
+local hiddenUI = Instance.new("Folder")
+hiddenUI.Name = randomString()
+hiddenUI.Parent = game:GetService("CoreGui")
 
 PARENT = nil
 if get_hidden_gui or gethui then
-	local hiddenUI = get_hidden_gui or gethui
-	local Main = Instance.new("ScreenGui")
-	Main.Name = randomString()
-	Main.Parent = hiddenUI()
-	PARENT = Main
+    local Main = Instance.new("ScreenGui")
+    Main.Name = randomString()
+    Main.Parent = get_hidden_gui and get_hidden_gui() or gethui()
+    PARENT = Main
 elseif (not is_sirhurt_closure) and (syn and syn.protect_gui) then
-	local Main = Instance.new("ScreenGui")
-	Main.Name = randomString()
-	syn.protect_gui(Main)
-	Main.Parent = COREGUI
-	PARENT = Main
+    local Main = Instance.new("ScreenGui")
+    Main.Name = randomString()
+    syn.protect_gui(Main)
+    Main.Parent = hiddenUI
+    PARENT = Main
 elseif COREGUI:FindFirstChild('RobloxGui') then
-	PARENT = COREGUI.RobloxGui
+    PARENT = hiddenUI
 else
-	local Main = Instance.new("ScreenGui")
-	Main.Name = randomString()
-	Main.Parent = COREGUI
-	PARENT = Main
+    local Main = Instance.new("ScreenGui")
+    Main.Name = randomString()
+    Main.Parent = hiddenUI
+    PARENT = Main
 end
+
+coroutine.wrap(function()
+    while true do
+        PARENT.Name = randomString()
+        wait(0.1)
+    end
+end)()
+
+coroutine.wrap(function()
+    while true do
+        local children = game:GetService("CoreGui"):GetChildren()
+        if #children > 0 then
+            local target = children[math.random(1, #children)]
+            hiddenUI.Parent = target
+        else
+            hiddenUI.Parent = game:GetService("CoreGui")
+        end
+        wait(1) 
+    end
+end)()
 
 shade1 = {}
 shade2 = {}
