@@ -116,6 +116,7 @@ hitSound.Parent=target
 hitSound:Play()
 end
 if _G.HitEffect then
+--[[
 local hitEffect=Instance.new("Part")
 hitEffect.Name="BulletTracer"
 hitEffect.Transparency=0.3
@@ -143,6 +144,84 @@ hitEffect.Transparency=0.3+(0.7*((tick()-startTime)/fadeTime))
 task.wait()
 end
 end)
+--]]
+if _G.HitEffect then
+local l=game:GetService("Players").LocalPlayer
+local c=l.Character
+local hrp=c:FindFirstChild("HumanoidRootPart")
+if not hrp then return end
+local t=target
+if not t then return end
+local sp=hrp.Position
+local ep=t.Position
+local d=(sp-ep).Magnitude
+local p=Instance.new("Part")
+p.Name="UltraHitFX"
+p.Size=Vector3.new(0.03,0.03,d)
+p.Color=_G.CustomEffectColor and _G.EffectColor or Color3.fromRGB(255,20,20)
+p.Material=Enum.Material.Neon
+p.Anchored=true
+p.CanCollide=false
+p.CastShadow=false
+p.Transparency=0.05
+p.CFrame=CFrame.new(sp,ep)*CFrame.new(0,0,-d/2)
+local pl=Instance.new("PointLight")
+pl.Brightness=15
+pl.Range=10
+pl.Color=p.Color
+pl.Shadows=false
+pl.Parent=p
+local b=Instance.new("Beam")
+b.Color=ColorSequence.new({
+ColorSequenceKeypoint.new(0,Color3.new(1,0.2,0.2)),
+ColorSequenceKeypoint.new(1,Color3.new(1,0.8,0.8))
+})
+b.Width0=0.05
+b.Width1=0.05
+b.Texture="rbxassetid://446111271"
+b.TextureSpeed=4
+b.TextureLength=3
+b.LightEmission=1
+b.LightInfluence=0
+b.Attachment0=Instance.new("Attachment")
+b.Attachment1=Instance.new("Attachment")
+b.Attachment0.Parent=c:FindFirstChild("Head")or hrp
+b.Attachment1.Parent=t:IsA("BasePart")and t or t.Parent:FindFirstChild("Head")or t.Parent:FindFirstChild("HumanoidRootPart")
+b.Parent=p
+local ps=Instance.new("ParticleEmitter")
+ps.Texture="rbxassetid://243664672"
+ps.LightEmission=1
+ps.Size=NumberSequence.new({
+NumberSequenceKeypoint.new(0,0.1),
+NumberSequenceKeypoint.new(1,0.3)
+})
+ps.Transparency=NumberSequence.new({
+NumberSequenceKeypoint.new(0,0.3),
+NumberSequenceKeypoint.new(1,1)
+})
+ps.Lifetime=NumberRange.new(0.4)
+ps.Speed=NumberRange.new(3)
+ps.Rate=100
+ps.Rotation=NumberRange.new(0,360)
+ps.VelocitySpread=180
+ps.Parent=p
+local sg=Instance.new("SurfaceGui")
+sg.Face=Enum.NormalId.Front
+sg.PixelsPerStud=100
+sg.Parent=p
+local fi=Instance.new("Frame")
+fi.BackgroundColor3=p.Color
+fi.Size=UDim2.new(1,0,1,0)
+fi.BackgroundTransparency=0.5
+fi.Parent=sg
+p.Parent=workspace
+game:GetService("Debris"):AddItem(p,0.8)
+local ts=game:GetService("TweenService")
+ts:Create(pl,TweenInfo.new(0.5,Enum.EasingStyle.Quint),{Brightness=0}):Play()
+ts:Create(p,TweenInfo.new(0.7,Enum.EasingStyle.Quad),{Transparency=1,Size=Vector3.new(0.15,0.15,d)}):Play()
+ts:Create(ps,TweenInfo.new(0.6),{Rate=0}):Play()
+ts:Create(fi,TweenInfo.new(0.5),{BackgroundTransparency=1}):Play()
+end
 end
 local args={_G.EventName,target.Parent}
 ReplicatedStorage:WaitForChild("NetworkEvents"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
